@@ -1,0 +1,25 @@
+{
+  "slug": "Toolbox",
+  "name": "Toolbox",
+  "version": "2.0.000",
+  "license": "GPL-3.0-or-later",
+  "author": "Don Cross",
+  "authorEmail": "cosinekitty@gmail.com",
+  "authorUrl": "https://www.youtube.com/@CosineKitty",
+  "pluginUrl": "https://github.com/cosinekitty/toolbox",
+  "manualUrl": "https://github.com/cosinekitty/toolbox/blob/main/README.md",
+  "sourceUrl": "https://github.com/cosinekitty/toolbox",
+  "donateUrl": "",
+  "changelogUrl": "https://github.com/cosinekitty/toolbox/blob/main/CHANGELOG.md",
+  "modules": [
+    {
+      "slug": "ModuleScanner",
+      "name": "Module Scanner",
+      "description": "Scans all the other modules in a patch and saves info about them to a database.",
+      "manualUrl": "https://github.com/cosinekitty/toolbox/blob/main/doc/ModuleScanner.md",
+      "tags": [
+        "Utility"
+      ]
+    }
+  ]
+}
