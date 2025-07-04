@@ -3,11 +3,13 @@
 
 namespace Toolbox
 {
+    using toolbox_button_t = VCVLightBezel<GrayModuleLightWidget>;
+
     struct ToolboxModule : Module
     {
     };
 
-    struct ToolboxWidget : Widget
+    struct ToolboxWidget : ModuleWidget
     {
     };
 }
