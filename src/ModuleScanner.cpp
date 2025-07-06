@@ -65,6 +65,8 @@ namespace Toolbox
             explicit ModuleScannerWidget(ModuleScannerModule* module)
             {
                 setModule(module);
+                const std::string svgFileName = asset::plugin(pluginInstance, "res/modscan.svg");
+                setPanel(new SvgOverlay(window::Svg::load(svgFileName)));
                 addParam(createLightParamCentered<ToolboxButton>(
                     Vec(5.0, 5.0),
                     module,
