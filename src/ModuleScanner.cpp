@@ -29,6 +29,8 @@ namespace Toolbox
 
         struct ModuleScannerModule : ToolboxModule
         {
+            GateTriggerReceiver saveReceiver;
+
             explicit ModuleScannerModule()
             {
                 config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
@@ -37,6 +39,7 @@ namespace Toolbox
 
             void initialize()
             {
+                saveReceiver.initialize();
             }
 
             void onReset(const ResetEvent& e) override
@@ -46,7 +49,13 @@ namespace Toolbox
 
             void process(const ProcessArgs& args) override
             {
-                // Do nothing
+                if (saveReceiver.updateTrigger(10 * params.at(SAVE_BUTTON_PARAM).getValue()))
+                    updateModuleDatabase(asset::user("ModuleScanner.json"));
+            }
+
+            void updateModuleDatabase(const std::string& dataFileName)
+            {
+                INFO("I want to be a macho man.");
             }
         };
 
@@ -56,13 +65,12 @@ namespace Toolbox
             explicit ModuleScannerWidget(ModuleScannerModule* module)
             {
                 setModule(module);
-                auto saveButton = createLightParamCentered<toolbox_button_t>(
+                addParam(createLightParamCentered<ToolboxButton>(
                     Vec(5.0, 5.0),
                     module,
                     SAVE_BUTTON_PARAM,
                     SAVE_BUTTON_LIGHT
-                );
-                addParam(saveButton);
+                ));
             }
         };
     }
