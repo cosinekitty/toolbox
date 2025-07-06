@@ -34,6 +34,7 @@ namespace Toolbox
             explicit ModuleScannerModule()
             {
                 config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
+                configButton(SAVE_BUTTON_PARAM, "Update module database");
                 initialize();
             }
 
@@ -68,7 +69,7 @@ namespace Toolbox
                 const std::string svgFileName = asset::plugin(pluginInstance, "res/modscan.svg");
                 setPanel(new SvgOverlay(window::Svg::load(svgFileName)));
                 addParam(createLightParamCentered<ToolboxButton>(
-                    Vec(5.0, 5.0),
+                    mm2px(Vec((8/2) * HP_WIDTH_MM, 20.0)),
                     module,
                     SAVE_BUTTON_PARAM,
                     SAVE_BUTTON_LIGHT

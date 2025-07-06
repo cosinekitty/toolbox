@@ -3,6 +3,8 @@
 
 namespace Toolbox
 {
+    constexpr float HP_WIDTH_MM = 5.08;
+
     class GateTriggerReceiver
     {
     private:
