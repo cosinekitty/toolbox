@@ -83,13 +83,13 @@ namespace Toolbox
 
             void update(ModuleWidget* widget)
             {
-                if (!widget || !widget->model)
+                if (!widget || !widget->model || !widget->model->plugin)
                     return;
 
                 const std::string& moduleSlug = widget->model->slug;
                 const std::string& pluginSlug = widget->model->plugin->slug;
 
-                json_t* moduleJson = serialize(widget);
+                json_t* moduleJson = serializeModule(widget);
 
                 // root[pluginSlug][moduleSlug] = moduleRecord
                 // Get or create the plugin object.
@@ -104,10 +104,35 @@ namespace Toolbox
                 json_object_set(pluginObj, moduleSlug.c_str(), moduleJson);
             }
 
-            json_t* serialize(ModuleWidget* widget)
+            json_t* serializeModule(ModuleWidget* widget)
             {
                 json_t* root = json_object();
+                json_t* params = json_array();
+                json_object_set_new(root, "params", params);
+                for (ParamWidget* paramWidget : widget->getParams())
+                    if (json_t* paramJson = serializeParam(paramWidget))
+                        json_array_append_new(params, paramJson);
                 return root;
+            }
+
+            json_t* serializeParam(ParamWidget* paramWidget)
+            {
+                if (ParamQuantity* qty = paramWidget->getParamQuantity())
+                {
+                    json_t* paramJson = json_object();
+                    json_object_set_new(paramJson, "paramId", json_integer(qty->paramId));
+                    json_object_set_new(paramJson, "name", json_string(qty->name.c_str()));
+                    json_object_set_new(paramJson, "description", json_string(qty->description.c_str()));
+                    json_object_set_new(paramJson, "unit", json_string(qty->unit.c_str()));
+                    json_object_set_new(paramJson, "minValue", json_real(qty->minValue));
+                    json_object_set_new(paramJson, "maxValue", json_real(qty->maxValue));
+                    json_object_set_new(paramJson, "defaultValue", json_real(qty->defaultValue));
+                    json_object_set_new(paramJson, "displayBase", json_real(qty->displayBase));
+                    json_object_set_new(paramJson, "displayMultiplier", json_real(qty->displayMultiplier));
+                    json_object_set_new(paramJson, "displayOffset", json_real(qty->displayOffset));
+                    return paramJson;
+                }
+                return nullptr;
             }
         };
 
