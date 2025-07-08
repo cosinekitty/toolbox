@@ -86,12 +86,12 @@ namespace Toolbox
                 if (!widget || !widget->model || !widget->model->plugin)
                     return;
 
-                const std::string& moduleSlug = widget->model->slug;
                 const std::string& pluginSlug = widget->model->plugin->slug;
+                const std::string& pluginVersion = widget->model->plugin->version;
 
                 json_t* moduleJson = serializeModule(widget);
 
-                // root[pluginSlug][moduleSlug] = moduleRecord
+                // root[pluginSlug][moduleSlug].modules.append(moduleRecord)
                 // Get or create the plugin object.
                 json_t* pluginObj = json_object_get(root, pluginSlug.c_str());
                 if (!pluginObj)
@@ -99,14 +99,24 @@ namespace Toolbox
                     pluginObj = json_object();
                     json_object_set_new(root, pluginSlug.c_str(), pluginObj);
                 }
+                json_object_set_new(pluginObj, "version", json_string(pluginVersion.c_str()));
 
-                // Set or update the module entry.
-                json_object_set(pluginObj, moduleSlug.c_str(), moduleJson);
+                // Ensure there is an array called "modules".
+                json_t* modulesArray = json_object_get(pluginObj, "modules");
+                if (!modulesArray)
+                {
+                    modulesArray = json_array();
+                    json_object_set_new(pluginObj, "modules", modulesArray);
+                }
+
+                // Append the module json to the "modules" array.
+                json_array_append_new(modulesArray, moduleJson);
             }
 
             json_t* serializeModule(ModuleWidget* widget)
             {
                 json_t* root = json_object();
+                json_object_set_new(root, "slug", json_string(widget->model->slug.c_str()));
                 json_t* params = json_array();
                 json_object_set_new(root, "params", params);
                 for (ParamWidget* paramWidget : widget->getParams())
