@@ -86,20 +86,21 @@ namespace Toolbox
                 if (!widget || !widget->model || !widget->model->plugin)
                     return;
 
-                const std::string& pluginSlug = widget->model->plugin->slug;
-                const std::string& pluginVersion = widget->model->plugin->version;
-
-                json_t* moduleJson = serializeModule(widget);
+                const Plugin* plugin = widget->model->plugin;
 
                 // root[pluginSlug][moduleSlug].modules.append(moduleRecord)
                 // Get or create the plugin object.
-                json_t* pluginObj = json_object_get(root, pluginSlug.c_str());
+                json_t* pluginObj = json_object_get(root, plugin->slug.c_str());
                 if (!pluginObj)
                 {
                     pluginObj = json_object();
-                    json_object_set_new(root, pluginSlug.c_str(), pluginObj);
+                    json_object_set_new(root, plugin->slug.c_str(), pluginObj);
                 }
-                json_object_set_new(pluginObj, "version", json_string(pluginVersion.c_str()));
+                json_object_set_new(pluginObj, "version",     json_string(plugin->version.c_str()));
+                json_object_set_new(pluginObj, "license",     json_string(plugin->license.c_str()));
+                json_object_set_new(pluginObj, "name",        json_string(plugin->name.c_str()));
+                json_object_set_new(pluginObj, "author",      json_string(plugin->author.c_str()));
+                json_object_set_new(pluginObj, "authorEmail", json_string(plugin->authorEmail.c_str()));
 
                 // Ensure there is an array called "modules".
                 json_t* modulesArray = json_object_get(pluginObj, "modules");
@@ -110,7 +111,8 @@ namespace Toolbox
                 }
 
                 // Append the module json to the "modules" array.
-                json_array_append_new(modulesArray, moduleJson);
+                if (json_t* moduleJson = serializeModule(widget))
+                    json_array_append_new(modulesArray, moduleJson);
             }
 
             json_t* serializeModule(ModuleWidget* widget)
