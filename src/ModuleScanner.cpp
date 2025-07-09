@@ -226,7 +226,7 @@ namespace Toolbox
                 ModuleDatabase db(dataFileName);
                 db.load();
                 for (Widget* w : APP->scene->rack->getModuleContainer()->children)
-                    if (auto mw = dynamic_cast<ModuleWidget*>(w); mw && mw->module)
+                    if (auto mw = dynamic_cast<ModuleWidget*>(w))
                         db.update(mw);
                 db.save();
             }
