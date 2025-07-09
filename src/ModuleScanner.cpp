@@ -40,6 +40,11 @@ namespace Toolbox
 
             virtual ~ModuleDatabase()
             {
+                unload();
+            }
+
+            void unload()
+            {
                 if (root)
                 {
                     json_decref(root);
@@ -49,19 +54,18 @@ namespace Toolbox
 
             void load()
             {
-                json_decref(root);
-                root = nullptr;
+                unload();
 
-                FILE* infile = fopen(filename.c_str(), "rt");
-                if (infile)
+                const char *fn = filename.c_str();
+                if (FILE* infile = fopen(fn, "rt"))
                 {
                     json_error_t error;
                     root = json_loadf(infile, 0, &error);
+                    if (root)
+                        INFO("Loaded json from file file: %s", fn);
+                    else
+                        WARN("Error at line %d, column %d in file %s: %s", error.line, error.column, fn, error.text);
                     fclose(infile);
-                }
-                else
-                {
-                    INFO("Could not open file for read: %s", filename.c_str());
                 }
 
                 if (root == nullptr)
@@ -70,15 +74,23 @@ namespace Toolbox
 
             void save()
             {
-                FILE* outfile = fopen(filename.c_str(), "wt");
-                if (outfile)
+                const char *fn = filename.c_str();
+                if (json_is_object(root))
                 {
-                    json_dumpf(root, outfile, JSON_INDENT(4));
-                    fclose(outfile);
+                    FILE* outfile = fopen(fn, "wt");
+                    if (outfile)
+                    {
+                        json_dumpf(root, outfile, JSON_INDENT(4));
+                        fclose(outfile);
+                    }
+                    else
+                    {
+                        INFO("Could not open file for write: %s", fn);
+                    }
                 }
                 else
                 {
-                    INFO("Could not open file for write: %s", filename.c_str());
+                    WARN("Root object is not valid. Skipping save to file %s", fn);
                 }
             }
 
