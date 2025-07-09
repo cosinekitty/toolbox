@@ -31,7 +31,7 @@ namespace Toolbox
         {
         private:
             const std::string filename;
-            json_t* root = nullptr;
+            json_t* root = json_object();
 
         public:
             explicit ModuleDatabase(const std::string& _filename)
@@ -117,14 +117,41 @@ namespace Toolbox
 
             json_t* serializeModule(ModuleWidget* widget)
             {
-                json_t* root = json_object();
-                json_object_set_new(root, "slug", json_string(widget->model->slug.c_str()));
+                if (widget && widget->model)
+                {
+                    json_t* root = json_object();
+                    json_object_set_new(root, "slug", json_string(widget->model->slug.c_str()));
+                    json_object_set_new(root, "name", json_string(widget->model->name.c_str()));
+                    addParams(root, widget);
+                    addPorts(root, "inputs",  widget->getInputs());
+                    addPorts(root, "outputs", widget->getOutputs());
+                    return root;
+                }
+                return nullptr;
+            }
+
+            void addParams(json_t* root, ModuleWidget* widget)
+            {
                 json_t* params = json_array();
-                json_object_set_new(root, "params", params);
                 for (ParamWidget* paramWidget : widget->getParams())
                     if (json_t* paramJson = serializeParam(paramWidget))
                         json_array_append_new(params, paramJson);
-                return root;
+                json_object_set_new(root, "params", params);
+            }
+
+            void addPorts(json_t* root, const char *key, std::vector<PortWidget*> portList)
+            {
+                json_t* ports = json_array();
+                for (PortWidget* p : portList)
+                {
+                    PortInfo *info = p->getPortInfo();
+                    json_t* pj = json_object();
+                    json_object_set_new(pj, "portId", json_integer(info->portId));
+                    json_object_set_new(pj, "name", json_string(info->getFullName().c_str()));
+                    json_object_set_new(pj, "description", json_string(info->getDescription().c_str()));
+                    json_array_append_new(ports, pj);
+                }
+                json_object_set_new(root, key, ports);
             }
 
             json_t* serializeParam(ParamWidget* paramWidget)
@@ -180,7 +207,7 @@ namespace Toolbox
             {
                 INFO("Beginning scan.");
                 ModuleDatabase db(dataFileName);
-                db.load();
+                //db.load();
                 for (Widget* w : APP->scene->rack->getModuleContainer()->children)
                     if (auto mw = dynamic_cast<ModuleWidget*>(w); mw && mw->module)
                         db.update(mw);
