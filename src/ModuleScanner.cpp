@@ -50,6 +50,7 @@ namespace Toolbox
             void load()
             {
                 json_decref(root);
+                root = nullptr;
 
                 FILE* infile = fopen(filename.c_str(), "rt");
                 if (infile)
@@ -162,11 +163,12 @@ namespace Toolbox
                 for (PortWidget* p : portList)
                 {
                     PortInfo *info = p->getPortInfo();
-                    json_t* pj = json_object();
-                    json_object_set_new(pj, "portId", json_integer(info->portId));
-                    json_object_set_new(pj, "name", json_string(info->getFullName().c_str()));
-                    json_object_set_new(pj, "description", json_string(info->getDescription().c_str()));
-                    json_array_append_new(ports, pj);
+                    json_t* portJson = json_object();
+                    populateWidget(portJson, p);
+                    json_object_set_new(portJson, "portId", json_integer(info->portId));
+                    json_object_set_new(portJson, "name", json_string(info->getFullName().c_str()));
+                    json_object_set_new(portJson, "description", json_string(info->getDescription().c_str()));
+                    json_array_append_new(ports, portJson);
                 }
                 json_object_set_new(root, key, ports);
             }
@@ -176,6 +178,7 @@ namespace Toolbox
                 if (ParamQuantity* qty = paramWidget->getParamQuantity())
                 {
                     json_t* paramJson = json_object();
+                    populateWidget(paramJson, paramWidget);
                     json_object_set_new(paramJson, "paramId", json_integer(qty->paramId));
                     json_object_set_new(paramJson, "name", json_string(qty->name.c_str()));
                     json_object_set_new(paramJson, "description", json_string(qty->description.c_str()));
@@ -189,6 +192,22 @@ namespace Toolbox
                     return paramJson;
                 }
                 return nullptr;
+            }
+
+            void populateWidget(json_t* root, Widget* widget)
+            {
+                json_t* box = json_object();
+                json_object_set_new(root, "box", box);
+                addVec(box, "pos",  widget->box.pos);
+                addVec(box, "size", widget->box.size);
+            }
+
+            void addVec(json_t* root, const char* key, const Vec& vec)
+            {
+                json_t* obj = json_object();
+                json_object_set_new(obj, "x", json_real(vec.x));
+                json_object_set_new(obj, "y", json_real(vec.y));
+                json_object_set_new(root, key, obj);
             }
         };
 
