@@ -110,8 +110,25 @@ namespace Toolbox
                     json_object_set_new(pluginObj, "modules", modulesArray);
                 }
 
-                // Append the module json to the "modules" array.
-                if (json_t* moduleJson = serializeModule(widget))
+                // Search for a module with the same slug.
+                // If it exists, replace it. Otherwise, create a new entry.
+                json_t* moduleJson = serializeModule(widget);
+                size_t index;
+                json_t *existingModule{};
+                const char* moduleSlug = widget->model->slug.c_str();
+                bool found = false;
+                json_array_foreach(modulesArray, index, existingModule)
+                {
+                    json_t *slug = json_object_get(existingModule, "slug");
+                    if (json_is_string(slug) && 0==strcmp(json_string_value(slug), moduleSlug))
+                    {
+                        json_array_set_new(modulesArray, index, moduleJson);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
                     json_array_append_new(modulesArray, moduleJson);
             }
 
@@ -207,7 +224,7 @@ namespace Toolbox
             {
                 INFO("Beginning scan.");
                 ModuleDatabase db(dataFileName);
-                //db.load();
+                db.load();
                 for (Widget* w : APP->scene->rack->getModuleContainer()->children)
                     if (auto mw = dynamic_cast<ModuleWidget*>(w); mw && mw->module)
                         db.update(mw);
